@@ -29,9 +29,33 @@ async function run() {
     await client.connect();
 
     const trendingCollection = client.db("news12SMDB").collection("trandings");
+    const demoNewsCollection = client.db("news12SMDB").collection("demo-news");
+    const articleCollection = client.db("news12SMDB").collection("articles");
 
+    // post article
+    app.post('/articles', async(req, res)=>{
+      const  article = req.body;
+      const result = await articleCollection.insertOne(article);
+      res.send(result)
+    });
+
+    app.get('/articles', async(req, res)=>{
+      const cursor =  articleCollection.find();
+      const result =await cursor.toArray();
+      res.send(result)
+    })
+
+
+
+
+
+    // get all demoNews
+    app.get('/demo', async(req, res)=>{
+      const cursor =  demoNewsCollection.find();
+      const result =await  cursor.toArray();
+      res.send(result)
+    })
     // get all trending
-
     app.get('/trending',async(req, res)=>{
         const cursor = trendingCollection.find();
         const result = await cursor.toArray();
