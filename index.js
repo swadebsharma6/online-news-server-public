@@ -34,6 +34,7 @@ async function run() {
     const articleCollection = client.db("news12SMDB").collection("articles");
     const viewsCollection = client.db("news12SMDB").collection("views");
     const userCollection = client.db("news12SMDB").collection("users");
+    const publisherCollection = client.db("news12SMDB").collection("publishers");
 
     // jwt related api
     app.post('/jwt', async(req, res)=>{
@@ -70,6 +71,15 @@ async function run() {
         };
         next();
     }
+
+    // publisher related Api
+    // post publisher
+    app.post('/publisher', async(req, res)=>{
+      const  publisher = req.body;
+      const result = await publisherCollection.insertOne(publisher);
+      res.send(result)
+    });
+
 
     // user Related Api
     app.patch('/user/admin/:id', async(req, res)=>{
@@ -143,6 +153,7 @@ async function run() {
     });
 
     app.get('/articles', async(req, res)=>{
+      // const query = { role: 'approve' };
       const cursor =  articleCollection.find();
       const result =await cursor.toArray();
       res.send(result)
@@ -153,6 +164,41 @@ async function run() {
       const query = {_id: new ObjectId(id)};
       const result =await articleCollection.findOne(query);
       res.send(result)
+    })
+
+    app.delete('/articles/:id', async(req,res)=>{
+      const id = req.params.id;
+      const query ={_id: new ObjectId(id)};
+      const result = await articleCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+     // making approved article
+     app.patch('/articles/approved/:id', verifyToken,  async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc ={
+        $set:{
+          role: 'approve',
+        }
+      }
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+
+    })
+     // making premium article
+     app.patch('/articles/premium/:id', verifyToken,  async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc ={
+        $set:{
+          role: 'premium',
+        }
+      }
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+
     })
 
 
